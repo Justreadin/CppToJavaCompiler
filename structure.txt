@@ -1,0 +1,52 @@
+CppToJavaCompiler/
+│
+├── src/                     # Source code for the compiler
+│   ├── lexer/               # Tokenization module
+│   │   ├── Token.h
+│   │   ├── Token.cpp
+│   │   ├── Lexer.h
+│   │   ├── Lexer.cpp
+│   │   └── TokenTypes.h
+│   │
+│   ├── parser/              # Syntax and semantic analysis module
+│   │   ├── ASTNode.h
+│   │   ├── ASTNode.cpp
+│   │   ├── Parser.h
+│   │   ├── Parser.cpp
+│   │   ├── SymbolTable.h
+│   │   ├── SymbolTable.cpp
+│   │   ├── TypeChecker.h
+│   │   ├── TypeChecker.cpp
+│   │   └── ASTPrinter.h
+│   │
+│   ├── codegen/             # Java code generation module
+│   │   ├── CodeGenerator.h
+│   │   ├── CodeGenerator.cpp
+│   │   ├── JavaEmitter.h
+│   │   ├── JavaEmitter.cpp
+│   │   └── OutputWriter.h
+│   │
+│   ├── utils/               # Utility functions
+│   │   ├── Logger.h
+│   │   ├── Logger.cpp
+│   │   ├── FileReader.h
+│   │   ├── FileReader.cpp
+│   │   ├── ErrorHandler.h
+│   │   ├── ErrorHandler.cpp
+│   │
+│   ├── main.cpp             # Main entry point of the compiler
+│
+├── tests/                   # Unit tests for different components
+│   ├── lexer_tests.cpp
+│   ├── parser_tests.cpp
+│   ├── codegen_tests.cpp
+│
+├── examples/                # Sample C++ programs to test conversion
+│   ├── sample1.cpp
+│   ├── sample2.cpp
+│
+├── build/                   # Compiled binaries (after compilation)
+│
+├── CMakeLists.txt           # CMake build configuration
+├── README.md                # Project documentation
+└── .gitignore 
