@@ -1,9 +1,10 @@
-// Logger.cpp
 #include "Logger.h"
+#include <iostream>
+#include <ctime>
 
 std::ofstream Logger::logFile;
 std::mutex Logger::logMutex;
-bool Logger::toFile = false;
+bool Logger::useFile = false;
 
 std::string Logger::getTimestamp() {
     std::time_t now = std::time(nullptr);
@@ -12,7 +13,7 @@ std::string Logger::getTimestamp() {
     return std::string(buf);
 }
 
-std::string Logger::logLevelToString(LogLevel level) {
+std::string Logger::levelToString(LogLevel level) {
     switch (level) {
         case LogLevel::INFO: return "INFO";
         case LogLevel::WARNING: return "WARNING";
@@ -25,20 +26,28 @@ void Logger::init(const std::string& filename) {
     if (!filename.empty()) {
         logFile.open(filename, std::ios::app);
         if (logFile.is_open()) {
-            toFile = true;
+            useFile = true;
         }
     }
 }
 
 void Logger::log(LogLevel level, const std::string& message) {
     std::lock_guard<std::mutex> lock(logMutex);
-    std::string logEntry = "[" + getTimestamp() + "] [" + logLevelToString(level) + "] " + message;
+    std::string logEntry = "[" + getTimestamp() + "] [" + levelToString(level) + "] " + message;
 
-    if (toFile && logFile.is_open()) {
+    if (useFile && logFile.is_open()) {
         logFile << logEntry << std::endl;
     }
 
     std::cout << logEntry << std::endl;
+}
+
+void Logger::logError(const std::string& message) {
+    log(LogLevel::ERROR, message);
+}
+
+void Logger::logWarning(const std::string& message) {
+    log(LogLevel::WARNING, message);
 }
 
 void Logger::close() {

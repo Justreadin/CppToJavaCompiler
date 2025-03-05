@@ -13,13 +13,10 @@ enum class LogLevel {
 
 class Logger {
 public:
-    // Initializes the logger with an optional file output
     static void init(const std::string& filename = "");
-
-    // Logs a message with the given level
     static void log(LogLevel level, const std::string& message);
-
-    // Closes the log file if it was opened
+    static void logError(const std::string& message);
+    static void logWarning(const std::string& message);
     static void close();
 
 private:
@@ -27,10 +24,7 @@ private:
     static std::mutex logMutex;
     static bool useFile;
 
-    // Helper function to convert log level to string
     static std::string levelToString(LogLevel level);
-
-    // Helper function to get formatted timestamp
     static std::string getTimestamp();
 };
 
