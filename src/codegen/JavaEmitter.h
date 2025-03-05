@@ -13,8 +13,13 @@ public:
     void emitReturn(const ASTNodePtr& node);
     void emitBinaryExpression(const ASTNodePtr& node);
     void emitExpression(const ASTNodePtr& node);
+    void emitIfStatement(const ASTNodePtr& node);
+    void emitWhileLoop(const ASTNodePtr& node);
 
 private:
+    void emitFunctionCall(const ASTNodePtr& node);
+    void emitBlock(const ASTNodePtr& node);
+
     OutputWriter& writer;
 };
 

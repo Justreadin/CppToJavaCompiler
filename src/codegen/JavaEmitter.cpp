@@ -7,14 +7,18 @@ void JavaEmitter::emitVariableDeclaration(const ASTNodePtr& node) {
     if (!node) return;
 
     auto varDecl = std::dynamic_pointer_cast<VariableDeclarationNode>(node);
-    if (!varDecl) return;
+    if (!varDecl || !varDecl->identifier) return;
+
+    auto identifierNode = std::dynamic_pointer_cast<IdentifierNode>(varDecl->identifier);
+    if (!identifierNode) return;
 
     std::string type = varDecl->type;
-    std::string name = std::dynamic_pointer_cast<IdentifierNode>(varDecl->identifier)->name;
+    std::string name = identifierNode->name;
     std::string value = varDecl->initializer ? varDecl->initializer->toString() : "";
 
     writer.write(type + " " + name + (value.empty() ? ";" : " = " + value + ";"));
 }
+
 
 void JavaEmitter::emitFunction(const ASTNodePtr& node) {
     if (!node) return;

@@ -9,9 +9,7 @@ void CodeGenerator::generateCode(const ASTNodePtr& root) {
         return;
     }
 
-    for (const auto& child : root->children) {
-        generateStatement(child);
-    }
+    generateStatement(root);
 }
 
 void CodeGenerator::generateStatement(const ASTNodePtr& node) {

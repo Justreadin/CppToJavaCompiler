@@ -10,9 +10,9 @@ enum class NodeType {
     PROGRAM,
     FUNCTION_DECLARATION,
     VARIABLE_DECLARATION,
-    BINARY_EXPRESSION,
+    BINARY_EXPRESSION,  // Ensure this is defined
     IDENTIFIER,
-    NUMBER_LITERAL,
+    NUMBER_LITERAL,  // Ensure this is defined
     STRING_LITERAL,
     RETURN_STATEMENT,
     FUNCTION_CALL,

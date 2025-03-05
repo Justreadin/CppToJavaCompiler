@@ -9,13 +9,15 @@
 
 class CodeGenerator {
 public:
-    CodeGenerator(const std::string& outputFilename);
-    void generate(ASTNodePtr ast);
+    explicit CodeGenerator(JavaEmitter& emitter);
+
+    void generateCode(const ASTNodePtr& root);
+    void generateStatement(const ASTNodePtr& node);
+    void generateExpression(const ASTNodePtr& node);
 
 private:
     SymbolTable symbolTable;
-    JavaEmitter javaEmitter;
-    OutputWriter outputWriter;
+    JavaEmitter& emitter;
 };
 
 #endif // CODEGENERATOR_H

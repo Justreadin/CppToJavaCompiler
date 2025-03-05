@@ -1,4 +1,5 @@
 #include "ASTNode.h"
+#include <iostream>
 
 // Constructor for base ASTNode
 ASTNode::ASTNode(NodeType type) : type(type) {}
@@ -56,7 +57,7 @@ std::string StringNode::toString() const {
 // BinaryExpressionNode Implementation
 // ---------------------------------
 BinaryExpressionNode::BinaryExpressionNode(std::shared_ptr<ASTNode> left, const std::string& op, std::shared_ptr<ASTNode> right)
-    : ASTNode(NodeType::BINARY_EXPRESSION), left(left), op(op), right(right) {}
+    : ASTNode(NodeType::BINARY_EXPRESSION), left(std::move(left)), op(op), right(std::move(right)) {}
 
 std::string BinaryExpressionNode::toString() const {
     return "BinaryExpression(" + left->toString() + " " + op + " " + right->toString() + ")";
@@ -66,7 +67,7 @@ std::string BinaryExpressionNode::toString() const {
 // FunctionCallNode Implementation
 // ---------------------------------
 FunctionCallNode::FunctionCallNode(std::shared_ptr<ASTNode> functionName, std::vector<std::shared_ptr<ASTNode>> arguments)
-    : ASTNode(NodeType::FUNCTION_CALL), functionName(functionName), arguments(arguments) {}
+    : ASTNode(NodeType::FUNCTION_CALL), functionName(std::move(functionName)), arguments(std::move(arguments)) {}
 
 std::string FunctionCallNode::toString() const {
     std::string result = "FunctionCall(" + functionName->toString() + "(";
@@ -83,7 +84,7 @@ std::string FunctionCallNode::toString() const {
 // VariableDeclarationNode Implementation
 // ---------------------------------
 VariableDeclarationNode::VariableDeclarationNode(const std::string& type, std::shared_ptr<ASTNode> identifier, std::shared_ptr<ASTNode> initializer)
-    : ASTNode(NodeType::VARIABLE_DECLARATION), type(type), identifier(identifier), initializer(initializer) {}
+    : ASTNode(NodeType::VARIABLE_DECLARATION), type(type), identifier(std::move(identifier)), initializer(std::move(initializer)) {}
 
 std::string VariableDeclarationNode::toString() const {
     return "VariableDeclaration(" + type + " " + identifier->toString() + " = " + (initializer ? initializer->toString() : "null") + ")";
@@ -94,7 +95,7 @@ std::string VariableDeclarationNode::toString() const {
 // ---------------------------------
 FunctionDeclarationNode::FunctionDeclarationNode(const std::string& returnType, std::shared_ptr<ASTNode> functionName,
                                                  std::vector<std::shared_ptr<ASTNode>> parameters, std::shared_ptr<ASTNode> body)
-    : ASTNode(NodeType::FUNCTION_DECLARATION), returnType(returnType), functionName(functionName), parameters(parameters), body(body) {}
+    : ASTNode(NodeType::FUNCTION_DECLARATION), returnType(returnType), functionName(std::move(functionName)), parameters(std::move(parameters)), body(std::move(body)) {}
 
 std::string FunctionDeclarationNode::toString() const {
     std::string result = "FunctionDeclaration(" + returnType + " " + functionName->toString() + "(";
@@ -111,7 +112,7 @@ std::string FunctionDeclarationNode::toString() const {
 // ReturnStatementNode Implementation
 // ---------------------------------
 ReturnStatementNode::ReturnStatementNode(std::shared_ptr<ASTNode> expression)
-    : ASTNode(NodeType::RETURN_STATEMENT), expression(expression) {}
+    : ASTNode(NodeType::RETURN_STATEMENT), expression(std::move(expression)) {}
 
 std::string ReturnStatementNode::toString() const {
     return "Return(" + (expression ? expression->toString() : "null") + ")";
@@ -121,7 +122,7 @@ std::string ReturnStatementNode::toString() const {
 // IfStatementNode Implementation
 // ---------------------------------
 IfStatementNode::IfStatementNode(std::shared_ptr<ASTNode> condition, std::shared_ptr<ASTNode> thenBlock, std::shared_ptr<ASTNode> elseBlock)
-    : ASTNode(NodeType::IF_STATEMENT), condition(condition), thenBlock(thenBlock), elseBlock(elseBlock) {}
+    : ASTNode(NodeType::IF_STATEMENT), condition(std::move(condition)), thenBlock(std::move(thenBlock)), elseBlock(std::move(elseBlock)) {}
 
 std::string IfStatementNode::toString() const {
     return "If(" + condition->toString() + " then " + thenBlock->toString() + (elseBlock ? " else " + elseBlock->toString() : "") + ")";
@@ -131,7 +132,7 @@ std::string IfStatementNode::toString() const {
 // WhileLoopNode Implementation
 // ---------------------------------
 WhileLoopNode::WhileLoopNode(std::shared_ptr<ASTNode> condition, std::shared_ptr<ASTNode> body)
-    : ASTNode(NodeType::WHILE_LOOP), condition(condition), body(body) {}
+    : ASTNode(NodeType::WHILE_LOOP), condition(std::move(condition)), body(std::move(body)) {}
 
 std::string WhileLoopNode::toString() const {
     return "While(" + condition->toString() + " " + body->toString() + ")";
@@ -141,7 +142,7 @@ std::string WhileLoopNode::toString() const {
 // BlockNode Implementation
 // ---------------------------------
 BlockNode::BlockNode(std::vector<std::shared_ptr<ASTNode>> statements)
-    : ASTNode(NodeType::BLOCK), statements(statements) {}
+    : ASTNode(NodeType::BLOCK), statements(std::move(statements)) {}
 
 std::string BlockNode::toString() const {
     std::string result = "Block({ ";
