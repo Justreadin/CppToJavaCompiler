@@ -10,8 +10,14 @@ bool TypeChecker::check(ASTNodePtr node, SymbolTable& table, std::vector<std::st
             auto varDecl = std::dynamic_pointer_cast<VariableDeclarationNode>(node);
             if (!varDecl) return false;
 
-            std::string varName = varDecl->identifier;
-            std::string varType = varDecl->varType;  // Assuming the correct member is `varType`
+            auto identifierNode = std::dynamic_pointer_cast<IdentifierNode>(varDecl->identifier);
+            if (!identifierNode) {
+                errors.push_back("Error: Invalid identifier in variable declaration.");
+                return false;
+            }
+
+            std::string varName = identifierNode->name;
+            std::string varType = varDecl->type;
 
             if (table.isDefined(varName)) {
                 errors.push_back("Error: Variable '" + varName + "' is already declared.");
@@ -92,14 +98,16 @@ std::string TypeChecker::inferType(ASTNodePtr node, SymbolTable& table, std::vec
         case NodeType::IDENTIFIER: {
             auto idNode = std::dynamic_pointer_cast<IdentifierNode>(node);
             if (!idNode) return "UNKNOWN";
-            return table.getType(idNode->identifier);
+            return table.getType(idNode->name);
         }
         case NodeType::BINARY_EXPRESSION:
             return checkBinaryExpression(node, table, errors) ? inferType(node, table, errors) : "UNKNOWN";
         case NodeType::FUNCTION_CALL: {
             auto funcCall = std::dynamic_pointer_cast<FunctionCallNode>(node);
             if (!funcCall) return "UNKNOWN";
-            return table.getType(funcCall->functionName);
+            auto funcNameNode = std::dynamic_pointer_cast<IdentifierNode>(funcCall->functionName);
+            if (!funcNameNode) return "UNKNOWN";
+            return table.getType(funcNameNode->name);
         }
         default:
             return "UNKNOWN";
@@ -127,7 +135,10 @@ bool TypeChecker::checkFunctionCall(ASTNodePtr node, SymbolTable& table, std::ve
     auto funcCall = std::dynamic_pointer_cast<FunctionCallNode>(node);
     if (!funcCall) return false;
 
-    std::string functionName = funcCall->functionName;
+    auto funcNameNode = std::dynamic_pointer_cast<IdentifierNode>(funcCall->functionName);
+    if (!funcNameNode) return false;
+
+    std::string functionName = funcNameNode->name;
     if (!table.isDefined(functionName)) {
         errors.push_back("Error: Function '" + functionName + "' is not declared.");
         return false;
