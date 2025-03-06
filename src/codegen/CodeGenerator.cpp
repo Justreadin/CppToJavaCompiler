@@ -16,11 +16,11 @@ void CodeGenerator::generateStatement(const ASTNodePtr& node) {
     if (!node) return;
 
     switch (node->type) {
-        case NodeType::VARIABLE_DECL:
+        case NodeType::VARIABLE_DECLARATION:
             emitter.emitVariableDeclaration(node);
             break;
 
-        case NodeType::FUNCTION_DECL:
+        case NodeType::FUNCTION_DECLARATION:
             emitter.emitFunction(node);
             break;
 
@@ -36,6 +36,15 @@ void CodeGenerator::generateStatement(const ASTNodePtr& node) {
             emitter.emitWhileLoop(node);
             break;
 
+        case NodeType::BLOCK: {
+            auto blockNode = std::dynamic_pointer_cast<BlockNode>(node);
+            if (!blockNode) return;
+            for (const auto& stmt : blockNode->statements) {
+                generateStatement(stmt);
+            }
+            break;
+        }
+
         default:
             generateExpression(node);
             break;
@@ -46,13 +55,18 @@ void CodeGenerator::generateExpression(const ASTNodePtr& node) {
     if (!node) return;
 
     switch (node->type) {
-        case NodeType::BINARY_EXPR:
+        case NodeType::BINARY_EXPRESSION:
             emitter.emitBinaryExpression(node);
             break;
 
         case NodeType::IDENTIFIER:
-        case NodeType::NUMBER:
+        case NodeType::NUMBER_LITERAL:
+        case NodeType::STRING_LITERAL:
             emitter.emitExpression(node);
+            break;
+
+        case NodeType::FUNCTION_CALL:
+            emitter.emitFunctionCall(node);
             break;
 
         default:

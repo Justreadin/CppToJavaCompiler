@@ -15,9 +15,9 @@ public:
     void emitExpression(const ASTNodePtr& node);
     void emitIfStatement(const ASTNodePtr& node);
     void emitWhileLoop(const ASTNodePtr& node);
+    void emitFunctionCall(const ASTNodePtr& node);
 
 private:
-    void emitFunctionCall(const ASTNodePtr& node);
     void emitBlock(const ASTNodePtr& node);
 
     OutputWriter& writer;

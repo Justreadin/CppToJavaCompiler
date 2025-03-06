@@ -10,8 +10,8 @@ bool TypeChecker::check(ASTNodePtr node, SymbolTable& table, std::vector<std::st
             auto varDecl = std::dynamic_pointer_cast<VariableDeclarationNode>(node);
             if (!varDecl) return false;
 
-            std::string varName = varDecl->identifier->toString();
-            std::string varType = varDecl->type;
+            std::string varName = varDecl->identifier;
+            std::string varType = varDecl->varType;  // Assuming the correct member is `varType`
 
             if (table.isDefined(varName)) {
                 errors.push_back("Error: Variable '" + varName + "' is already declared.");
@@ -23,9 +23,6 @@ bool TypeChecker::check(ASTNodePtr node, SymbolTable& table, std::vector<std::st
         }
         case NodeType::BINARY_EXPRESSION:
             return checkBinaryExpression(node, table, errors);
-
-        case NodeType::ASSIGNMENT:
-            return checkAssignment(node, table, errors);
 
         case NodeType::FUNCTION_CALL:
             return checkFunctionCall(node, table, errors);
@@ -68,11 +65,16 @@ bool TypeChecker::check(ASTNodePtr node, SymbolTable& table, std::vector<std::st
             check(whileLoop->body, table, errors);
             break;
         }
-        default:
-            for (const auto& child : node->children) {
-                if (!check(child, table, errors)) return false;
+        case NodeType::BLOCK: {
+            auto block = std::dynamic_pointer_cast<BlockNode>(node);
+            if (!block) return false;
+            for (const auto& stmt : block->statements) {
+                check(stmt, table, errors);
             }
             break;
+        }
+        default:
+            return false;
     }
 
     return true;
@@ -87,34 +89,17 @@ std::string TypeChecker::inferType(ASTNodePtr node, SymbolTable& table, std::vec
             return "int";
         case NodeType::STRING_LITERAL:
             return "string";
-        case NodeType::BOOLEAN_LITERAL:
-            return "bool";
         case NodeType::IDENTIFIER: {
             auto idNode = std::dynamic_pointer_cast<IdentifierNode>(node);
             if (!idNode) return "UNKNOWN";
-            return table.getType(idNode->name);
+            return table.getType(idNode->identifier);
         }
-        case NodeType::BINARY_EXPRESSION: {
-            auto binExpr = std::dynamic_pointer_cast<BinaryExpressionNode>(node);
-            if (!binExpr) return "UNKNOWN";
-
-            std::string leftType = inferType(binExpr->left, table, errors);
-            std::string rightType = inferType(binExpr->right, table, errors);
-
-            if (leftType != rightType) {
-                errors.push_back("Type Error: Mismatched types in binary expression (" +
-                                 leftType + " vs. " + rightType + ").");
-                return "UNKNOWN";
-            }
-
-            return leftType; // Assume result type is same as operands
-        }
+        case NodeType::BINARY_EXPRESSION:
+            return checkBinaryExpression(node, table, errors) ? inferType(node, table, errors) : "UNKNOWN";
         case NodeType::FUNCTION_CALL: {
             auto funcCall = std::dynamic_pointer_cast<FunctionCallNode>(node);
             if (!funcCall) return "UNKNOWN";
-
-            std::string functionName = funcCall->functionName->toString();
-            return table.getType(functionName);
+            return table.getType(funcCall->functionName);
         }
         default:
             return "UNKNOWN";
@@ -142,42 +127,18 @@ bool TypeChecker::checkFunctionCall(ASTNodePtr node, SymbolTable& table, std::ve
     auto funcCall = std::dynamic_pointer_cast<FunctionCallNode>(node);
     if (!funcCall) return false;
 
-    std::string functionName = funcCall->functionName->toString();
+    std::string functionName = funcCall->functionName;
     if (!table.isDefined(functionName)) {
         errors.push_back("Error: Function '" + functionName + "' is not declared.");
         return false;
     }
 
-    std::string expectedType = table.getType(functionName);
     for (const auto& arg : funcCall->arguments) {
         std::string argType = inferType(arg, table, errors);
         if (argType == "UNKNOWN") {
             errors.push_back("Error: Invalid argument type in function call to '" + functionName + "'.");
             return false;
         }
-    }
-
-    return true;
-}
-
-// Checks variable assignments
-bool TypeChecker::checkAssignment(ASTNodePtr node, SymbolTable& table, std::vector<std::string>& errors) {
-    auto assignNode = std::dynamic_pointer_cast<AssignmentNode>(node);
-    if (!assignNode) return false;
-
-    std::string varName = assignNode->identifier->toString();
-    std::string varType = table.getType(varName);
-
-    if (varType == "UNKNOWN") {
-        errors.push_back("Error: Variable '" + varName + "' is not declared.");
-        return false;
-    }
-
-    std::string exprType = inferType(assignNode->value, table, errors);
-    if (varType != exprType) {
-        errors.push_back("Type Error: Cannot assign value of type '" + exprType + "' to variable '" + varName +
-                         "' of type '" + varType + "'.");
-        return false;
     }
 
     return true;
