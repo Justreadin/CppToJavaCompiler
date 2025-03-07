@@ -1,6 +1,8 @@
 #include "Parser.h"
 #include <iostream>
 #include <stdexcept>
+#include "lexer/TokenTypes.h"
+
 
 // Constructor
 Parser::Parser(std::vector<Token> tokens) : tokens(tokens), currentTokenIndex(0) {}
@@ -32,14 +34,15 @@ void Parser::expect(TokenType type, const std::string& errorMessage) {
 // ===============================
 
 ASTNodePtr Parser::parseExpression() {
-    return parseBinaryExpression();
+    return parseBinaryExpression(0);  // Updated to pass precedence level
 }
+
 
 ASTNodePtr Parser::parsePrimary() {
     if (match(TokenType::NUMBER)) {
         return std::make_shared<NumberNode>(std::stod(tokens[currentTokenIndex - 1].value));
     }
-    if (match(TokenType::STRING)) {
+    if (match(TokenType::STRING_LITERAL)) {  // Updated from STRING to STRING_LITERAL
         return std::make_shared<StringNode>(tokens[currentTokenIndex - 1].value);
     }
     if (match(TokenType::IDENTIFIER)) {

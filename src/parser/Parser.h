@@ -19,11 +19,14 @@ private:
     ASTNodePtr parseStatement();
     ASTNodePtr parseBlock();
     ASTNodePtr parseFunctionDeclaration();
-    ASTNodePtr parseVariableDeclaration();
+    ASTNodePtr parseVariableDeclaration(const std::string& type);
     ASTNodePtr parseIfStatement();
     ASTNodePtr parseWhileLoop();
     ASTNodePtr parseReturnStatement();
     ASTNodePtr parseProgram();
+    ASTNodePtr parseBinaryExpression(int precedence);
+    ASTNodePtr parsePrimary();
+
 
 public:
     Parser(std::vector<Token> tokens);

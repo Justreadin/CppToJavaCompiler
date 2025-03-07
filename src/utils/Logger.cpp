@@ -50,6 +50,10 @@ void Logger::logWarning(const std::string& message) {
     log(LogLevel::WARNING, message);
 }
 
+void Logger::logInfo(const std::string& message) {
+    std::cout << "[INFO]: " << message << std::endl;
+}
+
 void Logger::close() {
     if (logFile.is_open()) {
         logFile.close();

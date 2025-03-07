@@ -16,6 +16,7 @@ public:
     static void init(const std::string& filename = "");
     static void log(LogLevel level, const std::string& message);
     static void logError(const std::string& message);
+    static void logInfo(const std::string& message);
     static void logWarning(const std::string& message);
     static void close();
 
