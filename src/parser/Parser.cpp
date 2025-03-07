@@ -1,7 +1,8 @@
 #include "Parser.h"
 #include <iostream>
 #include <stdexcept>
-#include "lexer/TokenTypes.h"
+#include "../lexer/TokenTypes.h"
+
 
 
 // Constructor
