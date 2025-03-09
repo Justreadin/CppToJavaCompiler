@@ -1,5 +1,7 @@
+#include <iostream>
 #include "Lexer.h"
 #include <cctype>
+#include <ostream>
 #include <unordered_set>
 
 // Define a set of C++ keywords
@@ -10,7 +12,7 @@ const std::unordered_set<std::string> Lexer::keywords = {
     "class", "public", "private", "protected", "static"
 };
 
-Lexer::Lexer(const std::string& source) 
+Lexer::Lexer(const std::string& source)
     : source(source), position(0), line(1), column(1) {}
 
 char Lexer::peek() const {
@@ -99,7 +101,7 @@ Token Lexer::handleComment() {
             while (peek() != '\n' && peek() != '\0') {
                 value += advance();
             }
-        } 
+        }
         else if (peek() == '*') { // Multi-line comment
             advance();
             while (peek() != '\0') {
@@ -135,7 +137,7 @@ Token Lexer::nextToken() {
         }
 
         // Check for operators
-        std::string operators = "+-*/%=&|<>!"; 
+        std::string operators = "+-*/%=&|<>!";
         if (operators.find(peek()) != std::string::npos) {
             return handleOperator();
         }
@@ -155,7 +157,11 @@ Token Lexer::nextToken() {
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
     Token token = nextToken();
+
     while (token.type != TokenType::END_OF_FILE) {
+        // Debugging output for each token
+        std::cout << token.toString() << " Type: " << static_cast<int>(token.type) << std::endl;
+
         tokens.push_back(token);
         token = nextToken();
     }

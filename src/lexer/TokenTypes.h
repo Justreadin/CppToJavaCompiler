@@ -10,6 +10,7 @@ enum class TokenType {
     STRING_LITERAL,
     COMMENT,
     UNKNOWN,
+    PREPROCESSOR_DIRECTIVE,  // Add this line
     END_OF_FILE
 };
 

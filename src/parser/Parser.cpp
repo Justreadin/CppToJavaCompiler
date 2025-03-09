@@ -3,8 +3,6 @@
 #include <stdexcept>
 #include "../lexer/TokenTypes.h"
 
-
-
 // Constructor
 Parser::Parser(std::vector<Token> tokens) : tokens(tokens), currentTokenIndex(0) {}
 
@@ -35,15 +33,14 @@ void Parser::expect(TokenType type, const std::string& errorMessage) {
 // ===============================
 
 ASTNodePtr Parser::parseExpression() {
-    return parseBinaryExpression(0);  // Updated to pass precedence level
+    return parseBinaryExpression(0);
 }
-
 
 ASTNodePtr Parser::parsePrimary() {
     if (match(TokenType::NUMBER)) {
         return std::make_shared<NumberNode>(std::stod(tokens[currentTokenIndex - 1].value));
     }
-    if (match(TokenType::STRING_LITERAL)) {  // Updated from STRING to STRING_LITERAL
+    if (match(TokenType::STRING_LITERAL)) {
         return std::make_shared<StringNode>(tokens[currentTokenIndex - 1].value);
     }
     if (match(TokenType::IDENTIFIER)) {
@@ -56,12 +53,11 @@ ASTNodePtr Parser::parsePrimary() {
 ASTNodePtr Parser::parseBinaryExpression(int precedence) {
     ASTNodePtr left = parsePrimary();
 
-    while (match(TokenType::OPERATOR)) {
-        std::string op = tokens[currentTokenIndex - 1].value;
+    while (peek().type == TokenType::OPERATOR) {
+        std::string op = advance().value;
         ASTNodePtr right = parsePrimary();
         left = std::make_shared<BinaryExpressionNode>(left, op, right);
     }
-
     return left;
 }
 
@@ -70,24 +66,35 @@ ASTNodePtr Parser::parseBinaryExpression(int precedence) {
 // ===============================
 
 ASTNodePtr Parser::parseStatement() {
+    Token current = peek();
+    std::cout << "[DEBUG] Parsing statement: " << current.toString() << std::endl;
+
+    // **Handle preprocessor directives like #include**
+    if (current.type == TokenType::PREPROCESSOR_DIRECTIVE) {
+        std::cout << "[INFO] Skipping preprocessor directive: " << current.value << std::endl;
+        while (peek().type != TokenType::END_OF_FILE && peek().line == current.line) {
+            advance();  // Skip everything on the preprocessor directive line
+        }
+        return nullptr; // Ignore and continue parsing
+    }
+
+    // **Function Declaration Handling First**
     if (match(TokenType::KEYWORD)) {
         std::string keyword = tokens[currentTokenIndex - 1].value;
-        if (keyword == "return") {
-            return parseReturnStatement();
-        }
-        if (keyword == "if") {
-            return parseIfStatement();
-        }
-        if (keyword == "while") {
-            return parseWhileLoop();
-        }
-        if (keyword == "int" || keyword == "string") {
-            return parseVariableDeclaration(keyword);
+        Token nextToken = peek();
+        if (nextToken.type == TokenType::IDENTIFIER) {
+            Token identifier = advance();
+            if (peek().type == TokenType::SEPARATOR && peek().value == "(") {
+                return parseFunctionDeclaration();  // Correctly parse function
+            } else {
+                return parseVariableDeclaration(keyword);  // Otherwise, parse as a variable
+            }
         }
     }
 
-    if (peek().type == TokenType::IDENTIFIER) {
-        return parseExpression();
+    // **Return statement**
+    if (match(TokenType::KEYWORD) && tokens[currentTokenIndex - 1].value == "return") {
+        return parseReturnStatement();
     }
 
     throw std::runtime_error("Parsing Error: Unexpected statement at line " + std::to_string(peek().line));
@@ -97,8 +104,9 @@ ASTNodePtr Parser::parseBlock() {
     expect(TokenType::SEPARATOR, "Expected '{' before block body");
 
     std::vector<ASTNodePtr> statements;
-    while (peek().type != TokenType::SEPARATOR || peek().value != "}") {
-        statements.push_back(parseStatement());
+    while (!(peek().type == TokenType::SEPARATOR && peek().value == "}")) {
+        ASTNodePtr stmt = parseStatement();
+        if (stmt) statements.push_back(stmt);
     }
 
     expect(TokenType::SEPARATOR, "Expected '}' at the end of block");
@@ -117,12 +125,13 @@ ASTNodePtr Parser::parseFunctionDeclaration() {
     expect(TokenType::SEPARATOR, "Expected '(' after function name");
 
     std::vector<ASTNodePtr> parameters;
-    while (!match(TokenType::SEPARATOR) || tokens[currentTokenIndex - 1].value != ")") {
+    while (!(peek().type == TokenType::SEPARATOR && peek().value == ")")) {
         parameters.push_back(parsePrimary());
-        if (!match(TokenType::SEPARATOR) || tokens[currentTokenIndex - 1].value != ",") {
-            break;
+        if (peek().type == TokenType::SEPARATOR && peek().value == ",") {
+            advance();
         }
     }
+    expect(TokenType::SEPARATOR, "Expected ')' after parameters");
 
     ASTNodePtr body = parseBlock();
     return std::make_shared<FunctionDeclarationNode>(returnType, functionName, parameters, body);
@@ -132,44 +141,21 @@ ASTNodePtr Parser::parseVariableDeclaration(const std::string& type) {
     expect(TokenType::IDENTIFIER, "Expected variable name");
     std::shared_ptr<ASTNode> identifier = std::make_shared<IdentifierNode>(tokens[currentTokenIndex - 1].value);
 
-    expect(TokenType::OPERATOR, "Expected '=' after variable name");
-    ASTNodePtr initializer = parseExpression();
-
-    expect(TokenType::SEPARATOR, "Expected ';' after variable declaration");
-    return std::make_shared<VariableDeclarationNode>(type, identifier, initializer);
+    if (match(TokenType::OPERATOR) && tokens[currentTokenIndex - 1].value == "=") {
+        ASTNodePtr initializer = parseExpression();
+        expect(TokenType::SEPARATOR, "Expected ';' after variable declaration");
+        return std::make_shared<VariableDeclarationNode>(type, identifier, initializer);
+    }
+    throw std::runtime_error("Parsing Error: Expected '=' in variable declaration at line " + std::to_string(peek().line));
 }
 
 // ===============================
 // 🛠️ Control Flow Parsing
 // ===============================
 
-ASTNodePtr Parser::parseIfStatement() {
-    expect(TokenType::SEPARATOR, "Expected '(' after 'if'");
-    ASTNodePtr condition = parseExpression();
-    expect(TokenType::SEPARATOR, "Expected ')' after condition");
-
-    ASTNodePtr thenBlock = parseBlock();
-    ASTNodePtr elseBlock = nullptr;
-
-    if (match(TokenType::KEYWORD) && tokens[currentTokenIndex - 1].value == "else") {
-        elseBlock = parseBlock();
-    }
-
-    return std::make_shared<IfStatementNode>(condition, thenBlock, elseBlock);
-}
-
-ASTNodePtr Parser::parseWhileLoop() {
-    expect(TokenType::SEPARATOR, "Expected '(' after 'while'");
-    ASTNodePtr condition = parseExpression();
-    expect(TokenType::SEPARATOR, "Expected ')' after condition");
-
-    return std::make_shared<WhileLoopNode>(condition, parseBlock());
-}
-
 ASTNodePtr Parser::parseReturnStatement() {
     ASTNodePtr expr = parseExpression();
     expect(TokenType::SEPARATOR, "Expected ';' after return statement");
-
     return std::make_shared<ReturnStatementNode>(expr);
 }
 
@@ -180,7 +166,8 @@ ASTNodePtr Parser::parseReturnStatement() {
 ASTNodePtr Parser::parseProgram() {
     std::vector<ASTNodePtr> statements;
     while (peek().type != TokenType::END_OF_FILE) {
-        statements.push_back(parseStatement());
+        ASTNodePtr stmt = parseStatement();
+        if (stmt) statements.push_back(stmt);
     }
     return std::make_shared<BlockNode>(statements);
 }

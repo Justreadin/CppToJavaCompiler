@@ -69,13 +69,10 @@ Allow flags for debugging, verbose logging, and optimizations.
 🔹 Action: Implement main.cpp to handle file input/output.
 
 
-g++ -std=c++17 -o cpp2java \
-    src/main.cpp src/utils/Logger.cpp src/utils/FileReader.cpp \
-    src/parser/Parser.cpp src/lexer/Lexer.cpp \
-    src/codegen/CodeGenerator.cpp src/codegen/JavaEmitter.cpp \
-    -Iinclude -Isrc/utils
-
-
+mkdir build
+cd build
+cmake -G "MinGW Makefiles" ..
+mingw32-make
 
 
 g++ -std=c++17 -o cpp2java src/main.cpp src/utils/Logger.cpp src/parser/Parser.cpp src/lexer/Lexer.cpp src/codegen/CodeGenerator.cpp src/codegen/JavaEmitter.cpp -Iinclude
