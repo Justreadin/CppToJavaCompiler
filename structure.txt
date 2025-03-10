@@ -35,6 +35,7 @@ CppToJavaCompiler/
 │   │   ├── ErrorHandler.cpp
 │   │
 │   ├── main.cpp             # Main entry point of the compiler
+|   |-- CMakeLists.txt
 │
 ├── tests/                   # Unit tests for different components
 │   ├── lexer_tests.cpp
@@ -49,4 +50,4 @@ CppToJavaCompiler/
 │
 ├── CMakeLists.txt           # CMake build configuration
 ├── README.md                # Project documentation
-└── .gitignore 
+└── .gitignore

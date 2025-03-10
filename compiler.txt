@@ -12,8 +12,7 @@ Lexer.h / Lexer.cpp: Implements a scanner to break code into tokens.
 2️⃣ Parsing & AST Generation
 Converts tokens into an Abstract Syntax Tree (AST).
 Example: int x = 5; → AST representation:
-yaml
-Copy code
+
 VariableDeclaration
  ├── Type: int
  ├── Name: x
@@ -27,14 +26,12 @@ SymbolTable.h / SymbolTable.cpp: Keeps track of variables/functions.
 3️⃣ Java Code Generation
 Transforms the AST into equivalent Java code.
 Example:
-cpp
-Copy code
+
 class Test {
     int x = 5;
 };
 Converts to:
-java
-Copy code
+
 public class Test {
     int x = 5;
 }
@@ -54,25 +51,16 @@ Build System: Makefile or CMake
 Testing: Google Test (gtest) for unit testing
 Version Control: Git
 
-
-The provided code is a C++ implementation of a compiler for a simple programming language. The code is
-rm -r build
-mkdir build
-cd build
-cmake -G "MinGW Makefiles" ..
-mingw32-make
-
-
 5. CLI Interface for the Compiler
 Provide a command-line tool (e.g., cpp2java myfile.cpp -o myfile.java).
 Allow flags for debugging, verbose logging, and optimizations.
 🔹 Action: Implement main.cpp to handle file input/output.
 
 
+to run the code:
+set the exe as an environmental variable
+rm -r build
 mkdir build
 cd build
 cmake -G "MinGW Makefiles" ..
 mingw32-make
-
-
-g++ -std=c++17 -o cpp2java src/main.cpp src/utils/Logger.cpp src/parser/Parser.cpp src/lexer/Lexer.cpp src/codegen/CodeGenerator.cpp src/codegen/JavaEmitter.cpp -Iinclude
